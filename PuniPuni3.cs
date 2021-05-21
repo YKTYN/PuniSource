@@ -20,9 +20,10 @@ public class PuniPuni3 : MonoBehaviour
     //　頂点情報
     public struct VertexInfo
     {
+        // ついていくジョイントの番号
         public int jointIndex { get; set; }
-        public float magnitude { get; set; }
-        public Vector3 test { get; set; }
+        // ついていくジョイントとの位置の差
+        public Vector3 difference { get; set; }
     }
     private List<VertexInfo> vertexInfoList = new List<VertexInfo>();
 
@@ -33,28 +34,25 @@ public class PuniPuni3 : MonoBehaviour
         mesh = GetComponent<MeshFilter>().mesh;
         // 頂点座標リストを作成
         mesh.GetVertices(vertexList);
-        // ジョイントリスト作成
-        CreateJointList();
-        // 各頂点がついていくジョイントをセットする
-        SetJointPoint();
+        // ジョイントリスト初期化
+        InitJointList();
+        // 頂点情報初期化
+        InitVertexInfo();
     }
     private void FixedUpdate()
     {
         for(int i = 0; i < vertexInfoList.Count; i++)
         {
             VertexInfo vertexInfo = vertexInfoList[i];
-            vertexList[i] = jointList[vertexInfo.jointIndex].localPosition - vertexInfo.test;
+            vertexList[i] = jointList[vertexInfo.jointIndex].localPosition - vertexInfo.difference;
         }
         mesh.SetVertices(vertexList);
-        ////　連動装置とメッシュの頂点の座標を連動させる
-        //foreach (KeyValuePair<int, int> keyValue in sameDic)
-        //{
-        //    vertexList[keyValue.Key] = jointList[keyValue.Value].localPosition;
-        //}
-        //mesh.SetVertices(vertexList);
     }
 
-    private void SetJointPoint()
+    /// <summary>
+    /// 頂点情報初期化
+    /// </summary>
+    private void InitVertexInfo()
     {
         vertexInfoList = new List<VertexInfo>(new VertexInfo[vertexList.Count]);
         VertexInfo vertexInfo = new VertexInfo();
@@ -65,9 +63,8 @@ public class PuniPuni3 : MonoBehaviour
                 float magnitude = (jointList[j].localPosition - vertexList[i]).sqrMagnitude;
                 if (magnitude <= jointSize)
                 {
-                    vertexInfo.magnitude = magnitude;
                     vertexInfo.jointIndex = j;
-                    vertexInfo.test = (jointList[j].localPosition - vertexList[i]);
+                    vertexInfo.difference = (jointList[j].localPosition - vertexList[i]);
                 }
                 
             }
@@ -76,24 +73,22 @@ public class PuniPuni3 : MonoBehaviour
     }
 
     /// <summary>
-    /// ジョイントリスト作成
+    /// ジョイントリスト初期化
     /// </summary>
-    private void CreateJointList()
+    private void InitJointList()
     {
         Vector3[] jointPoints =
         {
-            // 上の手前
-            new Vector3(-jointSize, jointSize, -jointSize),    // 左
-            new Vector3(jointSize, jointSize, -jointSize),     // 右
-            // 上の奥
-            new Vector3(-jointSize, jointSize, jointSize),
-            new Vector3(jointSize, jointSize, jointSize),
-            // 下の手前
-            new Vector3(-jointSize, -jointSize, -jointSize),
-            new Vector3(jointSize, -jointSize, -jointSize),
-            // 下の奥
-            new Vector3(-jointSize, -jointSize, jointSize),
-            new Vector3(jointSize, -jointSize, jointSize),
+            new Vector3(0.0f, 0.0f, -jointSize),
+            new Vector3(0.0f, 0.0f, jointSize),
+            new Vector3(-jointSize, 0.0f, 0.0f),
+            new Vector3(jointSize, 0.0f, 0.0f),
+
+
+            new Vector3(-jointSize, 0.0f, -jointSize),
+            new Vector3(jointSize, 0.0f, -jointSize),
+            new Vector3(-jointSize, 0.0f, jointSize),
+            new Vector3(jointSize, 0.0f, jointSize),
         };
 
         foreach (Vector3 point in jointPoints)
@@ -102,16 +97,21 @@ public class PuniPuni3 : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// ジョイントオブジェクト生成
+    /// </summary>
+    /// <param name="pos">生成する位置</param>
+    /// <returns>生成したジョイントのTransform</returns>
     private Transform CreateJoint(Vector3 pos)
     {
-        GameObject obj0 = new GameObject("Interlocker");
+        GameObject obj0 = new GameObject("JointObj");
         GameObject obj = Instantiate(obj0);
         obj.transform.SetParent(transform);
         obj.transform.localPosition = pos;
         obj.transform.localRotation = Quaternion.identity;
 
-        //SphereCollider sc = obj.AddComponent<SphereCollider>();
-        //sc.radius = 0.01f;
+        SphereCollider sc = obj.AddComponent<SphereCollider>();
+        sc.radius = 0.01f;
         SpringJoint sj = obj.AddComponent<SpringJoint>();
         sj.connectedBody = transform.GetComponent<Rigidbody>();
         sj.spring = spring;
