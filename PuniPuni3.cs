@@ -9,6 +9,7 @@ public class PuniPuni3 : MonoBehaviour
     [SerializeField] private float minDistance = 0.0f;
     [SerializeField] private float maxDistance = 0.0f;
     [SerializeField] private float jointSize = 1.0f;
+    [SerializeField] private float jointHeight = 0.0f;
 
     //　メッシュ本体
     private Mesh mesh = null;
@@ -79,16 +80,16 @@ public class PuniPuni3 : MonoBehaviour
     {
         Vector3[] jointPoints =
         {
-            new Vector3(0.0f, 0.0f, -jointSize),
-            new Vector3(0.0f, 0.0f, jointSize),
-            new Vector3(-jointSize, 0.0f, 0.0f),
-            new Vector3(jointSize, 0.0f, 0.0f),
+            new Vector3(0.0f, jointHeight, -jointSize),
+            new Vector3(0.0f, jointHeight, jointSize),
+            new Vector3(-jointSize, jointHeight, 0.0f),
+            new Vector3(jointSize, jointHeight, 0.0f),
 
 
-            new Vector3(-jointSize, 0.0f, -jointSize),
-            new Vector3(jointSize, 0.0f, -jointSize),
-            new Vector3(-jointSize, 0.0f, jointSize),
-            new Vector3(jointSize, 0.0f, jointSize),
+            new Vector3(-jointSize, jointHeight, -jointSize),
+            new Vector3(jointSize, jointHeight, -jointSize),
+            new Vector3(-jointSize, jointHeight, jointSize),
+            new Vector3(jointSize, jointHeight, jointSize),
         };
 
         foreach (Vector3 point in jointPoints)
